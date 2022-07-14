@@ -79,17 +79,19 @@ def check_accuracy(loader, model, device="cuda"):
     model.train()
 
 def save_predictions_as_imgs(
-    loader, model, folder="unet/saved_images/", device="cuda"
+    loader, model, folder="from_scratch_unet/saved_images/", device="cuda"
 ):
     model.eval()
     for idx, (x, y) in enumerate(loader):
         x = x.to(device=device)
+        print(y.shape)
         with torch.no_grad():
             preds = torch.sigmoid(model(x))
             preds = (preds > 0.5).float()
+            print(preds.shape)
         torchvision.utils.save_image(
-            preds, f"{folder}/pred_{idx}.JPG"
+            preds, f"{folder}/pred_{idx}.png"
         )
-        torchvision.utils.save_image(y.unsqueeze(1), f"{folder}{idx}.JPG")
+        torchvision.utils.save_image(y.unsqueeze(1), f"{folder}{idx}.png")
 
     model.train()

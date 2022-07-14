@@ -16,17 +16,18 @@ from utils import (
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 10
+BATCH_SIZE = 16
 NUM_EPOCHS = 1
 NUM_WORKERS = 4
 IMAGE_HEIGHT = 256  # 1280 originally
 IMAGE_WIDTH = 256  # 1918 originally
 PIN_MEMORY = True
 LOAD_MODEL = False
-TRAIN_IMG_DIR = "256_Water/train/"
-TRAIN_MASK_DIR = "256_Water/train_masks/"
-VAL_IMG_DIR = "256_Water/test/"
-VAL_MASK_DIR = "256_Water/test_masks/"
+TRAIN_IMG_DIR = "../Datasets/shoreline_ready_data/train/images/"
+TRAIN_MASK_DIR = "../Datasets/shoreline_ready_data/train/masks/"
+VAL_IMG_DIR = "../Datasets/shoreline_ready_data/val/images/"
+VAL_MASK_DIR = "../Datasets/shoreline_ready_data/val/images/"
+
 # divide l by 256 = x, divide w by 256 = y, x*y = number of patches and then double the total for overlapping
 def train_fn(loader, model, optimizer, loss_fn, scaler):
     loop = tqdm(loader)
