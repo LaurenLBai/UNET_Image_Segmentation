@@ -16,18 +16,18 @@ from utils import (
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 16
-NUM_EPOCHS = 3
-NUM_WORKERS = 2
-IMAGE_HEIGHT = 200  # 1280 originally
-IMAGE_WIDTH = 200  # 1918 originally
+BATCH_SIZE = 10
+NUM_EPOCHS = 1
+NUM_WORKERS = 4
+IMAGE_HEIGHT = 256  # 1280 originally
+IMAGE_WIDTH = 256  # 1918 originally
 PIN_MEMORY = True
-LOAD_MODEL = True
-TRAIN_IMG_DIR = "WaterBodiesDataset/train/"
-TRAIN_MASK_DIR = "WaterBodiesDataset/train_masks/"
-VAL_IMG_DIR = "WaterBodiesDataset/test/"
-VAL_MASK_DIR = "WaterBodiesDataset/test_masks/"
-
+LOAD_MODEL = False
+TRAIN_IMG_DIR = "256_Water/train/"
+TRAIN_MASK_DIR = "256_Water/train_masks/"
+VAL_IMG_DIR = "256_Water/test/"
+VAL_MASK_DIR = "256_Water/test_masks/"
+# divide l by 256 = x, divide w by 256 = y, x*y = number of patches and then double the total for overlapping
 def train_fn(loader, model, optimizer, loss_fn, scaler):
     loop = tqdm(loader)
 
@@ -53,22 +53,22 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 def main():
     train_transform = A.Compose(
         [
-            A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
-            A.Rotate(limit=35, p=1.0),
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.1),
-            A.Normalize(
-                mean=[0.0, 0.0, 0.0],
-                std=[1.0, 1.0, 1.0],
-                max_pixel_value=255.0,
-            ),
+            # A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
+            # A.Rotate(limit=35, p=1.0),
+            # A.HorizontalFlip(p=0.5),
+            # A.VerticalFlip(p=0.1),
+            # A.Normalize(
+            #     mean=[0.0, 0.0, 0.0],
+            #     std=[1.0, 1.0, 1.0],
+            #     max_pixel_value=255.0,
+            # ),
             ToTensorV2(),
         ],
     )
 
     val_transforms = A.Compose(
         [
-            A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
+            # A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
             A.Normalize(
                 mean=[0.0, 0.0, 0.0],
                 std=[1.0, 1.0, 1.0],
@@ -102,12 +102,13 @@ def main():
     scaler = torch.cuda.amp.GradScaler()
 
     for epoch in range(NUM_EPOCHS):
+        print(f"\nEPOCH: {epoch+1}")
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
 
         # save model
         checkpoint = {
             "state_dict": model.state_dict(),
-            "optimizer":optimizer.state_dict(),
+            "optimizer": optimizer.state_dict(),
         }
         save_checkpoint(checkpoint)
 
@@ -116,7 +117,7 @@ def main():
 
         # print some examples to a folder
         save_predictions_as_imgs(
-            val_loader, model, folder="saved_images/", device=DEVICE
+            val_loader, model, folder="unet/saved_images/", device=DEVICE
         )
 
 
