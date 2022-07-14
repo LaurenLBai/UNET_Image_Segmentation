@@ -32,19 +32,7 @@ def main():
     for i in range(0,3):
         print_examples(TRAIN_IMG_DIR, TRAIN_MASK_DIR)
     
-    #print examples
-    # cont = 'c'
-    # i = 0
-    # dataset = Dataset(TRAIN_IMG_DIR, TRAIN_MASK_DIR, classes=['water'])
-   
-    # while(cont == 'c'):
-    #     image, mask = dataset[i] # get some sample
-    #     visualize(
-    #         image=image, 
-    #         mask=mask.squeeze(),
-    #     )
-    #     i+=1
-    #     cont = input("enter c to continue: ")
+
     #create model
     ENCODER = 'resnet34'
     ENCODER_WEIGHTS = 'imagenet'
@@ -77,9 +65,9 @@ def main():
             A.VerticalFlip(p=0.1),
         ],
     )
-
+    
     #create loaders
-    train_loader, train_ds, val_loader = get_loaders(
+    train_loader, val_loader = get_loaders(
         TRAIN_IMG_DIR,
         TRAIN_MASK_DIR,
         VAL_IMG_DIR,
@@ -91,8 +79,6 @@ def main():
         preprocessign_fn,
         classes = CLASSES, 
     )
-    
-    
     #define loss and optimizer
     loss = smp.utils.losses.DiceLoss()
     metrics = [
@@ -143,11 +129,10 @@ def main():
             print("Decreasing learning rate to 1e-5")
 
         
-        # #print some examples to a folder
-        # save_predictions_as_imgs(
-        #     val_loader, model, folder="unet/saved_images/", device=DEVICE
-        # )
-        #get a summary
+        #print some examples to a folder
+        save_predictions_as_imgs(
+            val_loader, model, folder="unet/saved_images/", device=DEVICE
+        )
 
 if __name__ == "__main__":
     main()

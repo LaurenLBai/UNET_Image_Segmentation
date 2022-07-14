@@ -35,6 +35,7 @@ mask_dir = "../Datasets/Shoreline_Dataset/masks/"
 masks = os.listdir(mask_dir)
 id = 0
 
+
 for i, mask_name in enumerate(masks):
     mask = cv2.imread(mask_dir + mask_name, 0)
     SIZE_X = (mask.shape[1]//patch_size)*patch_size
