@@ -72,7 +72,7 @@ def get_loaders(
         shuffle=False,
     )
 
-    return train_loader,  val_loader
+    return train_loader, val_loader
 
 
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
@@ -86,18 +86,14 @@ def load_checkpoint(checkpoint, model):
 def save_predictions_as_imgs(
     loader, model, folder="pretrained_unet/saved_images/", device="cuda"
 ):
-    model.eval()
     for idx, (x, y) in enumerate(loader):
         x = x.to(device=device)
         
         with torch.no_grad():
             preds = model(x)
-            #preds = (preds > 0.5).float()
-            print(preds.shape)
-            print(y.shape)
+            preds = (preds > 0.5).float()
         torchvision.utils.save_image(preds, f"{folder}pred_{idx}.png")
         torchvision.utils.save_image(y.unsqueeze(1), f"{folder}{idx}.png")
-
     model.train()
 def print_examples(img_dir, mask_dir):
     img_list = os.listdir(img_dir)
@@ -113,7 +109,7 @@ def print_examples(img_dir, mask_dir):
     plt.imshow(img_for_plot)
     plt.title('Image')
     plt.subplot(122)
-    plt.imshow(mask_for_plot)
+    plt.imshow(mask_for_plot, cmap = 'gray')
     plt.title('Mask')
     plt.show()
 

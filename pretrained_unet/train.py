@@ -10,9 +10,10 @@ from utils import (
     visualize,
 )
 from dataset import Dataset
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader 
+import numpy as np
 
-# Hyperparameters etc.
+# Hyperparameters 
 LOAD_MODEL = True
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -21,15 +22,16 @@ NUM_EPOCHS = 1
 NUM_WORKERS = 4
 IMAGE_HEIGHT = 256  
 IMAGE_WIDTH = 256  
-TRAIN_IMG_DIR = "../Datasets/shoreline_ready_data/train/images/"
-TRAIN_MASK_DIR = "../Datasets/shoreline_ready_data/train/masks/"
-VAL_IMG_DIR = "../Datasets/shoreline_ready_data/val/images/"
-VAL_MASK_DIR = "../Datasets/shoreline_ready_data/val/images/"
+TRAIN_IMG_DIR = "../Datasets/shoreline_ready_data/val/images/"
+TRAIN_MASK_DIR = "../Datasets/shoreline_ready_data/val/masks/"
+VAL_IMG_DIR = "../Datasets/shoreline_ready_data/train/images/"
+VAL_MASK_DIR = "../Datasets/shoreline_ready_data/train/masks/"
 
 def main():
     # #print examples
     # for i in range(0,3):
     #     print_examples(TRAIN_IMG_DIR, TRAIN_MASK_DIR)
+
 
     #create model
     ENCODER = 'resnet34'
@@ -89,70 +91,51 @@ def main():
     ])
    
 
-    #create epoch runners, iterate through dataloader's samples
+    # create epoch runners 
+    # it is a simple loop of iterating over dataloader`s samples
     train_epoch = smp.utils.train.TrainEpoch(
-        model,
-        loss= loss,
-        metrics = metrics,
-        optimizer = optimizer,
-        device = DEVICE,
-        verbose = True,
-    )
-    valid_epoch = smp.utils.train.ValidEpoch(
-        model,
-        loss = loss,
-        metrics = metrics,
-        device = DEVICE,
-        verbose = True,
-    )
-    #print some examples to a folder
-    save_predictions_as_imgs(
-        val_loader, model, folder="pretrained_unet/saved_images/", device=DEVICE
+        model, 
+        loss=loss, 
+        metrics=metrics, 
+        optimizer=optimizer,
+        device=DEVICE,
+        verbose=True,
     )
 
-    # train model
+    valid_epoch = smp.utils.train.ValidEpoch(
+        model, 
+        loss=loss, 
+        metrics=metrics, 
+        device=DEVICE,
+        verbose=True,
+    )
+       
+
+    # train model for 40 epochs
+
     max_score = 0
-    for epoch in range(NUM_EPOCHS):
-        print(f"\nEpoch: {epoch+1}")
+
+    for i in range(NUM_EPOCHS):
+    
+        print(f'\nEpoch: {i+1}')
         train_logs = train_epoch.run(train_loader)
         valid_logs = valid_epoch.run(val_loader)
-
+        
         # do something (save model, change lr, etc.)
         if max_score < valid_logs['iou_score']:
             max_score = valid_logs['iou_score']
             torch.save(model, './best_model.pth')
             print('Model saved!')
-
-        if epoch == 20:
+            
+        if i == 25:
             optimizer.param_groups[0]['lr'] = 1e-5
-            print("Decreasing learning rate to 1e-5")
+            print('Decrease decoder learning rate to 1e-5!')
 
         
-        #print some examples to a folder
-        save_predictions_as_imgs(
-            val_loader, model, folder="unet/saved_images/", device=DEVICE
-        )
-
-    if LOAD_MODEL:
-        #load the model
-        best_model = torch.load('../best_model.pth')
-        # create test dataset
-        test_dataset = Dataset(
-            VAL_IMG_DIR, 
-            VAL_MASK_DIR, 
-            preprocessing=get_preprocessing(preprocessing_fn),
-            classes=CLASSES,
-        )
-        #create dataloader
-        test_dataloader = DataLoader(test_dataset)
-        #create test set
-        test_epoch = smp.utils.train.ValidEpoch(
-            model=best_model,
-            loss=loss,
-            metrics=metrics,
-            device=DEVICE,
-        )
-        logs = test_epoch.run(test_dataloader)
+        # #print some examples to a folder
+        # save_predictions_as_imgs(
+        #     val_loader, model, folder="unet/saved_images/", device=DEVICE
+        # )
 
 
 
