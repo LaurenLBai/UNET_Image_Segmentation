@@ -9,60 +9,55 @@ from reconstruction import (
 
 patch_size = 256
 
-# img_dir = "../Datasets/Shoreline_Dataset/images/"
-# images = os.listdir(img_dir)
-# id = 0
+img_dir = "../Datasets/Shoreline_Dataset/images/"
+images = os.listdir(img_dir)
+id = 0
 
-# for i, image_name in enumerate(images):
-#     image = cv2.imread(img_dir + image_name, 1)
-#     SIZE_X = (image.shape[1]//patch_size)*patch_size
-#     SIZE_Y = (image.shape[0]//patch_size)*patch_size
-#     image = Image.fromarray(image)
-#     image = image.crop((0,0, SIZE_X, SIZE_Y))
-#     image = np.array(image)
+for i, image_name in enumerate(images):
+    image = cv2.imread(img_dir + image_name, 1)
+    print(image.shape)
+    SIZE_X = (image.shape[1]//patch_size)*patch_size
+    SIZE_Y = (image.shape[0]//patch_size)*patch_size
+    image = Image.fromarray(image)
+    image = image.crop((0,0, SIZE_X, SIZE_Y))
+    image = np.array(image)
+    print(image.shape)
 
-#     print("Now patchifying image:", img_dir + image_name)
-#     patches_img = patchify(image, (256, 256, 3), step=256)
-
-
-#     for i in range(patches_img.shape[0]):
-#         for j in range(patches_img.shape[1]):
-#             id += 1
-#             single_patch_img = patches_img[i, j, :, :]
-#             single_patch_img = single_patch_img[0]
-#             cv2.imwrite("256_Water/images/" + "IMG_" + str(id) + ".png", single_patch_img)
+    print("Now patchifying image:", img_dir + image_name)
+    patches_img = patchify(image, (256, 256, 3), step=256)
+    print(patches_img.shape)
 
 
-# mask_dir = "../Datasets/Shoreline_Dataset/masks/"
-# masks = os.listdir(mask_dir)
-# id = 0
+    for i in range(1):
+        for j in range(1):
+            id += 1
+            single_patch_img = patches_img[i, j]
+            print(single_patch_img.shape)
+            single_patch_img = single_patch_img[0]
+            print(single_patch_img.shape)
+            cv2.imwrite("256_Water/images/" + "IMG_" + str(id) + ".png", single_patch_img)
 
 
-# for i, mask_name in enumerate(masks):
-#     mask = cv2.imread(mask_dir + mask_name, 0)
-#     SIZE_X = (mask.shape[1]//patch_size)*patch_size
-#     SIZE_Y = (mask.shape[0]//patch_size)*patch_size
-#     mask = Image.fromarray(mask)
-#     mask = mask.crop((0,0, SIZE_X, SIZE_Y))
-#     mask = np.array(mask)
+mask_dir = "../Datasets/Shoreline_Dataset/masks/"
+masks = os.listdir(mask_dir)
+id = 0
 
-#     print("Now patchifying mask:", mask_dir + mask_name)
-#     patches_mask = patchify(mask, (256, 256), step=256)
 
-#     for i in range(patches_mask.shape[0]):
-#         for j in range(patches_mask.shape[1]):
-#             id += 1
-#             single_patch_mask = patches_mask[i, j, :, :]
-#             cv2.imwrite("256_Water/masks/" + "IMG_" + str(id) + ".png", single_patch_mask)
+for i, mask_name in enumerate(masks):
+    mask = cv2.imread(mask_dir + mask_name, 0)
+    SIZE_X = (mask.shape[1]//patch_size)*patch_size
+    SIZE_Y = (mask.shape[0]//patch_size)*patch_size
+    mask = Image.fromarray(mask)
+    mask = mask.crop((0,0, SIZE_X, SIZE_Y))
+    mask = np.array(mask)
 
-image = cv2.imread("../Datasets/Shoreline_Dataset/images/p1.JPG", 1)
-# cv2.imshow('image', image)
-print(image.shape)
-image= Image.fromarray(image)
+    print("Now patchifying mask:", mask_dir + mask_name)
+    patches_mask = patchify(mask, (256, 256), step=256)
 
-image = np.array(image)
-print(image.shape)
-patches_img = patchify(image, (256, 256, 3), step=256)
-print(patches_img.shape)
-patches_img.squeeze()
-print(patches_img.shape)
+    for i in range(patches_mask.shape[0]):
+        for j in range(patches_mask.shape[1]):
+            id += 1
+            single_patch_mask = patches_mask[i, j, :, :]
+            cv2.imwrite("256_Water/masks/" + "IMG_" + str(id) + ".png", single_patch_mask)
+
+

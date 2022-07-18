@@ -1,3 +1,4 @@
+from matplotlib import image
 import torch
 import torchvision
 from dataset import Dataset
@@ -9,6 +10,9 @@ import os
 import cv2
 
 def to_tensor(x, **kwargs):
+    # print('\n')
+    # print( x.shape)
+    # print('\n')
     return x.transpose(2, 0, 1).astype('float32')
 
 def get_preprocessing(preprocessing_fn):
@@ -74,27 +78,6 @@ def get_loaders(
 
     return train_loader, val_loader
 
-
-def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
-    print("=> Saving checkpoint")
-    torch.save(state, filename)
-
-def load_checkpoint(checkpoint, model):
-    print("=> Loading checkpoint")
-    model.load_state_dict(checkpoint["state_dict"])
-
-def save_predictions_as_imgs(
-    loader, model, folder="pretrained_unet/saved_images/", device="cuda"
-):
-    for idx, (x, y) in enumerate(loader):
-        x = x.to(device=device)
-        
-        with torch.no_grad():
-            preds = model(x)
-            preds = (preds > 0.5).float()
-        torchvision.utils.save_image(preds, f"{folder}pred_{idx}.png")
-        torchvision.utils.save_image(y.unsqueeze(1), f"{folder}{idx}.png")
-    model.train()
 def print_examples(img_dir, mask_dir):
     img_list = os.listdir(img_dir)
     mask_list = os.listdir(mask_dir)
@@ -120,11 +103,10 @@ def visualize(**images):
     n = len(images)
     plt.figure(figsize=(16, 5))
     for i, (name, image) in enumerate(images.items()):
+        # print(image.shape)
         plt.subplot(1, n, i + 1)
         plt.xticks([])
         plt.yticks([])
         plt.title(' '.join(name.split('_')).title())
         plt.imshow(image)
     plt.show()
- 
-   

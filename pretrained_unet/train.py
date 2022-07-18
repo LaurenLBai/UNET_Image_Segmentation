@@ -2,16 +2,8 @@ import torch
 import segmentation_models_pytorch as smp
 import albumentations as A
 from utils import (
-    load_checkpoint,
     get_loaders,
-    save_predictions_as_imgs,
-    get_preprocessing,
-    print_examples,
-    visualize,
 )
-from dataset import Dataset
-from torch.utils.data import DataLoader 
-import numpy as np
 
 # Hyperparameters 
 LOAD_MODEL = True
@@ -131,11 +123,6 @@ def main():
             optimizer.param_groups[0]['lr'] = 1e-5
             print('Decrease decoder learning rate to 1e-5!')
 
-        
-        # #print some examples to a folder
-        # save_predictions_as_imgs(
-        #     val_loader, model, folder="unet/saved_images/", device=DEVICE
-        # )
 
 
 
