@@ -10,9 +10,6 @@ import os
 import cv2
 
 def to_tensor(x, **kwargs):
-    # print('\n')
-    # print( x.shape)
-    # print('\n')
     return x.transpose(2, 0, 1).astype('float32')
 
 def get_preprocessing(preprocessing_fn):
@@ -84,8 +81,10 @@ def print_examples(img_dir, mask_dir):
     num_images = len(os.listdir(img_dir))
     img_num = random.randint(0, num_images-1)
     img_for_plot = cv2.imread(img_dir + img_list[img_num], 1)
+    print(img_for_plot.shape)
     img_for_plot = cv2.cvtColor(img_for_plot, cv2.COLOR_BGR2RGB)
     mask_for_plot = cv2.imread(mask_dir + mask_list[img_num], 0)
+    print(mask_for_plot.shape)
 
     plt.figure(figsize=(12,8))
     plt.subplot(121)
@@ -103,7 +102,6 @@ def visualize(**images):
     n = len(images)
     plt.figure(figsize=(16, 5))
     for i, (name, image) in enumerate(images.items()):
-        # print(image.shape)
         plt.subplot(1, n, i + 1)
         plt.xticks([])
         plt.yticks([])

@@ -6,7 +6,6 @@ from utils import (
 )
 
 # Hyperparameters 
-LOAD_MODEL = True
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 16
@@ -44,7 +43,6 @@ def main():
     #create augmentations
     train_augmentation = A.Compose(
         [
-            A.Rotate(limit=35, p=1.0),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.1),
         ],
@@ -52,7 +50,6 @@ def main():
 
     val_augmentation = A.Compose(
         [
-            A.Rotate(limit=35, p=1.0),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.1),
         ],
@@ -116,7 +113,7 @@ def main():
         # do something (save model, change lr, etc.)
         if max_score < valid_logs['iou_score']:
             max_score = valid_logs['iou_score']
-            torch.save(model, './best_model.pth')
+            torch.save(model, 'best_model.pth')
             print('Model saved!')
             
         if i == 25:

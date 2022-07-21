@@ -1,73 +1,78 @@
-import torch
-import torchvision
-from utils import (
-    get_preprocessing,
-    visualize,
-    
-)
-from dataset import Dataset
-from torch.utils.data import DataLoader
-import segmentation_models_pytorch as smp
+# https://youtu.be/0W6MKZqSke8
+"""
+Author: Dr. Sreenivas Bhattiprolu 
+Prediction using smooth tiling as descibed here...
+https://github.com/Vooban/Smoothly-Blend-Image-Patches
+"""
+
+import cv2
 import numpy as np
-from tqdm import tqdm
 
+from matplotlib import pyplot as plt
+from patchify import patchify, unpatchify
+from PIL import Image
+import segmentation_models_pytorch as smp
 
-TEST_IMG_DIR = "../Datasets/Shoreline_Test_Dataset/image_patches/"
-TEST_MASK_DIR = "../Datasets/Shoreline_Test_Dataset/mask_patches/"
-OUTPUT_DIR = "../Datasets/Shoreline_Test_Dataset/output/"
-ENCODER = 'resnet34'
-ENCODER_WEIGHTS = 'imagenet'
-CLASSES = ['water']
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
 
-preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
+from smooth_tiled_predictions import predict_img_with_smooth_windowing
 
-def main():
-    file = "../Datasets/shoreline_ready_data/val/images/"
-    # load best saved checkpoint
-    best_model = torch.load('best_model.pth')
-    # create test dataset
-    test_dataset = Dataset(
-        TEST_IMG_DIR, 
-        TEST_MASK_DIR, 
-        preprocessing=get_preprocessing(preprocessing_fn),
-        classes=CLASSES,
+BACKBONE = 'resnet34'
+preprocess_input = sm.get_preprocessing(BACKBONE)
+
+img = cv2.imread("data/images/N-34-66-C-c-4-3.tif")  #N-34-66-C-c-4-3.tif, N-34-97-D-c-2-4.tif
+input_img = scaler.fit_transform(img.reshape(-1, img.shape[-1])).reshape(img.shape)
+input_img = preprocess_input(input_img)
+
+original_mask = cv2.imread("data/masks/N-34-66-C-c-4-3.tif")
+original_mask = original_mask[:,:,0]  #Use only single channel...
+#original_mask = to_categorical(original_mask, num_classes=n_classes)
+
+from keras.models import load_model
+model = load_model("landcover_25_epochs_RESNET_backbone_batch16.hdf5", compile=False)
+                  
+# size of patches
+patch_size = 256
+
+# Number of classes 
+n_classes = 4
+
+         
+###################################################################################
+#Predict using smooth blending
+
+# Use the algorithm. The `pred_func` is passed and will process all the image 8-fold by tiling small patches with overlap, called once with all those image as a batch outer dimension.
+# Note that model.predict(...) accepts a 4D tensor of shape (batch, x, y, nb_channels), such as a Keras model.
+predictions_smooth = predict_img_with_smooth_windowing(
+    input_img,
+    window_size=patch_size,
+    subdivisions=2,  # Minimal amount of overlap for windowing. Must be an even number.
+    nb_classes=n_classes,
+    pred_func=(
+        lambda img_batch_subdiv: model.predict((img_batch_subdiv))
     )
+)
 
-    # test_dataloader = DataLoader(test_dataset)
 
-    # # evaluate model on test set
-    # loss = smp.utils.losses.DiceLoss()
-    # metrics = [
-    #     smp.utils.metrics.IoU(threshold=0.5),
-    # ]
+final_prediction = np.argmax(predictions_smooth, axis=2)
 
-    # test_epoch = smp.utils.train.ValidEpoch(
-    #     model=best_model,
-    #     loss= loss,
-    #     metrics=metrics,
-    #     device=DEVICE,
-    # )
+#Save prediction and original mask for comparison
+plt.imsave('data/test_images/N-34-66-C-c-4-3.tif_segmented.jpg', final_prediction)
+plt.imsave('data/test_images/N-34-66-C-c-4-3.tif_mask.jpg', original_mask)
+###################
 
-    # logs = test_epoch.run(test_dataloader)
 
-    # test dataset without transformations for image visualization
-    test_dataset_vis = Dataset(
-        TEST_IMG_DIR, TEST_MASK_DIR, 
-        classes=CLASSES,
-    )
+plt.figure(figsize=(12, 12))
+plt.subplot(221)
+plt.title('Testing Image')
+plt.imshow(img)
+plt.subplot(222)
+plt.title('Testing Label')
+plt.imshow(original_mask)
+plt.subplot(223)
+plt.title('Prediction with smooth blending')
+plt.imshow(final_prediction)
+plt.show()
 
-    #save prediction masks
-    print("\nMaking predictions:")
-    loop = tqdm(test_dataset)
-    for idx, (image, gt_mask) in enumerate(loop):
-        print(image.shape)
-        print(gt_mask.shape)
-        gt_mask = gt_mask.squeeze()
-        x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
-        pr_mask = best_model.predict(x_tensor)
-        # pr_mask = (pr_mask.squeeze().cpu().numpy().round())
-        torchvision.utils.save_image(pr_mask, f"{OUTPUT_DIR}/pred_{idx + 1}.png")
-
-if __name__ == "__main__":
-    main()
+#############################
