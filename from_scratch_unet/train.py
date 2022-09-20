@@ -23,10 +23,10 @@ IMAGE_HEIGHT = 256  # 1280 originally
 IMAGE_WIDTH = 256  # 1918 originally
 PIN_MEMORY = True
 LOAD_MODEL = False
-TRAIN_IMG_DIR = "../Datasets/shoreline_ready_data/train/images/"
-TRAIN_MASK_DIR = "../Datasets/shoreline_ready_data/train/masks/"
-VAL_IMG_DIR = "../Datasets/shoreline_ready_data/val/images/"
-VAL_MASK_DIR = "../Datasets/shoreline_ready_data/val/images/"
+TRAIN_IMG_DIR = "../Datasets/Shoreline_Dataset/ready_data/train_images/train/"
+TRAIN_MASK_DIR = "../Datasets/Shoreline_Dataset/ready_data/train_masks/train/"
+VAL_IMG_DIR = "../Datasets/Shoreline_Dataset/ready_data/val_images/val/"
+VAL_MASK_DIR = "../Datasets/Shoreline_Dataset/ready_data/val_masks/val/"
 
 # divide l by 256 = x, divide w by 256 = y, x*y = number of patches and then double the total for overlapping
 def train_fn(loader, model, optimizer, loss_fn, scaler):
@@ -34,6 +34,7 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
     for batch_idx, (data, targets) in enumerate(loop):
         data = data.to(device=DEVICE)
+
         targets = targets.float().unsqueeze(1).to(device=DEVICE)
 
         # forward
